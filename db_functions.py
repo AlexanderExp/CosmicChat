@@ -1,4 +1,5 @@
 import sqlite3
+import zodiac_sign
 
 def create_database() -> None:
     conn = sqlite3.connect('users.sqlite')
@@ -7,7 +8,10 @@ def create_database() -> None:
     CREATE TABLE IF NOT EXISTS user (
         id INTEGER PRIMARY KEY,
         birth_date TIMESTAMP,
+        zodiac_sign TEXT,
+        chineese_zodiac TEXT,
         birth_place TEXT,
+        daily_mess INTEGER,
         state BOOL
     )
     ''')
@@ -34,6 +38,15 @@ def register_user(user_id: int, state) -> None:
 def set_birthday(date: str, user_id) -> None:
     conn = sqlite3.connect('users.sqlite')
     cursor = conn.cursor()
-    cursor.execute('UPDATE user SET birth_date = ?, state = ? WHERE id = ?', (date, 'true', user_id))
+    cursor.execute('UPDATE user SET birth_date = ?, zodiac_sign = ?, chineese_zodiac = ?, state = ? WHERE id = ?', 
+                   (date, zodiac_sign.zodiac_info(date)[0], zodiac_sign.zodiac_info(date)[1], 'true', user_id))
+    conn.commit()
+    conn.close()
+
+def set_subscription(b: int, user_id) -> None:
+    conn = sqlite3.connect('users.sqlite')
+    cursor = conn.cursor()
+    cursor.execute('UPDATE user SET daily_mess = ?, state = ? WHERE id = ?', 
+                   (b, 'true', user_id))
     conn.commit()
     conn.close()

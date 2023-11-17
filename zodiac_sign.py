@@ -12,7 +12,7 @@ def chineese_zodiac(year):
           10: 'Собака', 
           11: 'Свинья'}
 
-    return z[year % 12]
+    return z[(year - 1972) % 12]
  
 def zodiac(month,day):
         z = ['Водолей', 'Рыбы', 'Овен', 'Телец', 'Близнецы', 'Рак', 'Лев', 'Дева', 'Весы', "Скорпион", "Стрелец", "Козерог"] 
@@ -24,11 +24,10 @@ def zodiac(month,day):
             return z[month-1]
  
 def zodiac_info(date):
-    a = date.split('.')
-    year = int(a[2])
-    month = int(a[1])
-    day = int(a[0])
-    return zodiac(month, day),chineese_zodiac(year)
+    year = int(date.strftime("%Y"))
+    month = int(date.strftime("%m"))
+    day = int(date.strftime("%d"))
+    return [zodiac(month, day),chineese_zodiac(year)]
 
 '''
 водолей — «Aquarius» (20.01 — 18.02),
