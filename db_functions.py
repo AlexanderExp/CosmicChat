@@ -50,3 +50,18 @@ def set_subscription(b: int, user_id) -> None:
                    (b, 'true', user_id))
     conn.commit()
     conn.close()
+
+def change_subscription(user_id):
+    conn = sqlite3.connect('users.sqlite')
+    cursor = conn.cursor()
+    [is_subs,] = cursor.execute('SELECT daily_mess FROM user WHERE id = ?', 
+                   (user_id,))
+    if (is_subs == (1,)):
+        cursor.execute('UPDATE user SET daily_mess = ?, state = ? WHERE id = ?', 
+                   (0, 'true', user_id))
+    else:
+        cursor.execute('UPDATE user SET daily_mess = ?, state = ? WHERE id = ?', 
+                   (1, 'true', user_id))
+    conn.commit()
+    conn.close()
+    return is_subs

@@ -49,6 +49,24 @@ def create_zodiac_menu():
     keyboard.add(aries, taurus, gemini, crayfish, leo, virgo, libra, scorpio, sagittarius, capricorn, aquarius, pisces)
     return keyboard
 
+def create_chineese_menu():
+    rat = types.InlineKeyboardButton('Крыса', callback_data='Крыса')
+    bull = types.InlineKeyboardButton('Бык', callback_data='Бык')
+    tiger = types.InlineKeyboardButton('Тигр', callback_data='Тигр')
+    rabbit = types.InlineKeyboardButton('Кролик', callback_data='Кролик')
+    dragon = types.InlineKeyboardButton('Дракон', callback_data='Дракон')
+    snake = types.InlineKeyboardButton('Змея', callback_data='Змея')
+    horse = types.InlineKeyboardButton('Лошадь', callback_data='Лошадь')
+    sheep = types.InlineKeyboardButton('Овца', callback_data='Овца')
+    monkey = types.InlineKeyboardButton('Обезьяна', callback_data='Обезьяна')
+    chicken = types.InlineKeyboardButton('Курица', callback_data='Курица')
+    dog = types.InlineKeyboardButton('Собака', callback_data='Собака')
+    pig = types.InlineKeyboardButton('Свинья', callback_data='Свинья')
+
+    keyboard = types.InlineKeyboardMarkup()
+    keyboard.add(rat, bull, tiger, rabbit, dragon, snake, horse, sheep, monkey, chicken, dog, pig)
+    return keyboard
+
 @bot.message_handler(commands=['start', 'help'])
 def send_welcome(message):
     state = db_functions.check_user(message.from_user.id)
@@ -75,12 +93,34 @@ def check_message(message):
                                  reply_markup=create_menu_yes_no())
             except:
                 bot.reply_to(message, "Неверный формат даты. Пожалуйста, введите дату в формате ДД.ММ.ГГГГ.")
-        elif(message.text == "Мой гороскоп на сегодня"):
-            bot.send_message(message.chat.id, "Test")
         else:
             bot.reply_to(message, "Неверный формат даты. Пожалуйста, введите дату в формате ДД.ММ.ГГГГ.")
     else:
-        bot.send_message(message.chat.id, 'Класс', reply_markup=create_main_menu_markup())
+        if(message.text == "Мой гороскоп на сегодня"):
+            bot.send_message(message.chat.id, "Пока не знаю")
+        elif(message.text == "Гороскоп на сегодня (выбрать зодиак)"):
+            bot.send_message(message.chat.id, "Выберите знак зодиака:", reply_markup=create_zodiac_menu())
+        elif(message.text == "Китайский гороскоп"):
+            bot.send_message(message.chat.id, "Выберите животное:", reply_markup=create_chineese_menu())
+        elif(message.text == "Совместимость"):
+            bot.send_message(message.chat.id, "Пока не знаю")
+        elif(message.text == "Натальная карта"):
+            bot.send_message(message.chat.id, "Пока не знаю")
+        elif(message.text == "HSE Special: Какая ворона ты сегодня?"):
+            bot.send_message(message.chat.id, "Пока не знаю")
+        elif(message.text == "Мотивашка дня"):
+            bot.send_message(message.chat.id, "Пока не знаю")
+        elif(message.text == "Отписаться / подписаться на ежедневный гороскоп"):
+            b = db_functions.change_subscription(message.from_user.id)
+            if (b == (1,)):
+                bot.send_message(message.chat.id, "Done! Вы отписались от ежедневной рассылки")
+            else:
+                bot.send_message(message.chat.id, "Готово! Вы подписались на ежедневную рассылку гороскопа")
+        elif re.match(r'\d{2}\.\d{2}\.\d{4}', message.text):
+            bot.send_message(message.chat.id, "Похоже вы пытаетесь ввести дату, но я уже знаю ваш День Рождения ^ - ^")
+        else:
+            bot.send_message(message.chat.id, 'Ой! Я вас не понял :(', reply_markup=create_main_menu_markup())
+
 
 
 # Функция callback_query_handler вносится один раз для обработки всех событий
@@ -92,11 +132,7 @@ def answer(call):
     elif call.data == 'нет':
         db_functions.set_subscription(0, call.from_user.id)
         bot.send_message(call.message.chat.id, "Окей, не буду беспокоить)", reply_markup=create_main_menu_markup())
-    elif call.data == 'гороскоп на сегодня':
-        bot.send_message(call.message.chat.id, "Пока не знаю")
 
-@bot.message_handler(func=lambda message: message.text == "Мой гороскоп на сегодня")
-def button1(message):
-    bot.send_message(message.chat.id, "U select bottom 1")
+
 
 bot.infinity_polling()
