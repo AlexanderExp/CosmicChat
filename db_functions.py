@@ -65,3 +65,11 @@ def change_subscription(user_id):
     conn.commit()
     conn.close()
     return is_subs
+
+def get_sign(user_id):
+    conn = sqlite3.connect('users.sqlite')
+    cursor = conn.cursor()
+    [sign,] = cursor.execute('SELECT zodiac_sign FROM user WHERE id = ?', (user_id,))
+    conn.commit()
+    conn.close()
+    return sign[0]

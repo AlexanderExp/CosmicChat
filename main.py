@@ -3,12 +3,21 @@ from telebot import types
 import datetime
 import re
 import db_functions
+import horoscope_func
+import hse_spec_func
 
 TOKEN = '5717083963:AAHflxPNEMzSklg_hc5Snbs24MQv4aaUyNU'
 db_functions.create_database()
 
 
 bot = telebot.TeleBot(TOKEN, parse_mode=None)
+
+def fetch_horoscope(message, sign):
+    horoscope = horoscope_func.get_daily_horoscope(sign)
+    data = horoscope["data"]
+    horoscope_message = f'*Horoscope:* {data["horoscope_data"]}\\n*Sign:* {sign}'
+    bot.send_message(message.chat.id, "Here's your horoscope!")
+    bot.send_message(message.chat.id, horoscope_message, parse_mode="Markdown")
 
 def create_main_menu_markup():
     markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
@@ -97,27 +106,38 @@ def check_message(message):
             bot.reply_to(message, "Неверный формат даты. Пожалуйста, введите дату в формате ДД.ММ.ГГГГ.")
     else:
         if(message.text == "Мой гороскоп на сегодня"):
+            sign = db_functions.get_sign(message.from_user.id)
+            fetch_horoscope(message.from_user.id, sign)
             bot.send_message(message.chat.id, "Пока не знаю")
+
         elif(message.text == "Гороскоп на сегодня (выбрать зодиак)"):
             bot.send_message(message.chat.id, "Выберите знак зодиака:", reply_markup=create_zodiac_menu())
+
         elif(message.text == "Китайский гороскоп"):
             bot.send_message(message.chat.id, "Выберите животное:", reply_markup=create_chineese_menu())
+
         elif(message.text == "Совместимость"):
             bot.send_message(message.chat.id, "Пока не знаю")
+
         elif(message.text == "Натальная карта"):
             bot.send_message(message.chat.id, "Пока не знаю")
+
         elif(message.text == "HSE Special: Какая ворона ты сегодня?"):
-            bot.send_message(message.chat.id, "Пока не знаю")
+            bot.send_message(message.chat.id, hse_spec_func.random_crow())
+
         elif(message.text == "Мотивашка дня"):
-            bot.send_message(message.chat.id, "Пока не знаю")
+            bot.send_message(message.chat.id, hse_spec_func.random_motivation())
+
         elif(message.text == "Отписаться / подписаться на ежедневный гороскоп"):
             b = db_functions.change_subscription(message.from_user.id)
             if (b == (1,)):
                 bot.send_message(message.chat.id, "Done! Вы отписались от ежедневной рассылки")
             else:
                 bot.send_message(message.chat.id, "Готово! Вы подписались на ежедневную рассылку гороскопа")
+
         elif re.match(r'\d{2}\.\d{2}\.\d{4}', message.text):
             bot.send_message(message.chat.id, "Похоже вы пытаетесь ввести дату, но я уже знаю ваш День Рождения ^ - ^")
+
         else:
             bot.send_message(message.chat.id, 'Ой! Я вас не понял :(', reply_markup=create_main_menu_markup())
 
