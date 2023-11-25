@@ -1,1 +1,3 @@
-pyTelegramBotAPI
+telebot
+shedule
+чц

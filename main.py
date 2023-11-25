@@ -3,20 +3,92 @@ from telebot import types
 import datetime
 import re
 import db_functions
-import horoscope_func
 import hse_spec_func
+from thread_safe_dict import ThreadSafeDict
+import schedule
+import requests
+import xml.etree.ElementTree as ET
+import time
+import threading
+from bs4 import BeautifulSoup, NavigableString
+
+
 
 TOKEN = '5717083963:AAHflxPNEMzSklg_hc5Snbs24MQv4aaUyNU'
+url = "https://ignio.com/r/export/win/xml/daily/com.xml"
+
+zodiac_signs = {
+    "Овен": "Aries",
+    "Телец": "Taurus",
+    "Близнецы": "Gemini",
+    "Рак": "Cancer",
+    "Лев": "Leo",
+    "Дева": "Virgo",
+    "Весы": "Libra",
+    "Скорпион": "Scorpio",
+    "Стрелец": "Sagittarius",
+    "Козерог": "Capricorn",
+    "Водолей": "Aquarius",
+    "Рыбы": "Pisces"
+}
+
+chinese_zodiac_animals = {
+    "Крыса": "https://vashzodiak.ru/kitaiskii-prognoz/krysa/",
+    "Бык": "https://vashzodiak.ru/kitaiskii-prognoz/byk/",
+    "Тигр": "https://vashzodiak.ru/kitaiskii-prognoz/tigr/",
+    "Кролик": "https://vashzodiak.ru/kitaiskii-prognoz/krolik/",
+    "Дракон": "https://vashzodiak.ru/kitaiskii-prognoz/drakon/",
+    "Змея": "https://vashzodiak.ru/kitaiskii-prognoz/zmeya/",
+    "Лошадь": "https://vashzodiak.ru/kitaiskii-prognoz/loshad/",
+    "Овца": "https://vashzodiak.ru/kitaiskii-prognoz/koza/",
+    "Обезьяна": "https://vashzodiak.ru/kitaiskii-prognoz/obezyana/",
+    "Курица": "https://vashzodiak.ru/kitaiskii-prognoz/petuh/",
+    "Собака": "https://vashzodiak.ru/kitaiskii-prognoz/sobaka/",
+    "Свинья": "https://vashzodiak.ru/kitaiskii-prognoz/kaban/"
+}
+
+safe_daily_horoscopes = ThreadSafeDict()
+
 db_functions.create_database()
 
+def update_daily_horoscope():
+    response = requests.get(url)
+    xml_content = response.content
+
+    root = ET.fromstring(xml_content)
+
+    for sign in list(root):
+        sign_name = sign.tag
+        if sign_name != 'date':
+            safe_daily_horoscopes.set(sign_name.capitalize(), sign.find('today').text)
+
+def run_bot():
+    bot.infinity_polling()
+
+
+# schedule.every().day.at("01:00").do(update_daily_horoscope)
+
+def run_schedule():
+    while True:
+        # schedule.run_pending()
+        update_daily_horoscope()
+        time.sleep(100)
 
 bot = telebot.TeleBot(TOKEN, parse_mode=None)
 
 def fetch_horoscope(message, sign):
-    horoscope = horoscope_func.get_daily_horoscope(sign)
-    data = horoscope["data"]
-    horoscope_message = f'*Horoscope:* {data["horoscope_data"]}\\n*Sign:* {sign}'
+    horoscope_message = f'*Horoscope:* {safe_daily_horoscopes.get(zodiac_signs[sign])}\n*Sign:* {sign}'
     bot.send_message(message.chat.id, "Here's your horoscope!")
+    bot.send_message(message.chat.id, horoscope_message, parse_mode="Markdown")
+
+def fetch_chinese_horoscope(message, animal):
+    response = requests.get(chinese_zodiac_animals[animal])
+    html = response.content
+    soup = BeautifulSoup(html, 'html.parser')
+    div = soup.find('div', class_='col-md-8')
+    text_nodes = [element for element in div.contents if isinstance(element, NavigableString)]
+    bot.send_message(message.chat.id, "Here's your horoscope!")
+    horoscope_message = f'*Horoscope:* {text_nodes[1]}\n*Animal:* {animal}'
     bot.send_message(message.chat.id, horoscope_message, parse_mode="Markdown")
 
 def create_main_menu_markup():
@@ -107,8 +179,7 @@ def check_message(message):
     else:
         if(message.text == "Мой гороскоп на сегодня"):
             sign = db_functions.get_sign(message.from_user.id)
-            fetch_horoscope(message.from_user.id, sign)
-            bot.send_message(message.chat.id, "Пока не знаю")
+            fetch_horoscope(message, sign)
 
         elif(message.text == "Гороскоп на сегодня (выбрать зодиак)"):
             bot.send_message(message.chat.id, "Выберите знак зодиака:", reply_markup=create_zodiac_menu())
@@ -152,7 +223,15 @@ def answer(call):
     elif call.data == 'нет':
         db_functions.set_subscription(0, call.from_user.id)
         bot.send_message(call.message.chat.id, "Окей, не буду беспокоить)", reply_markup=create_main_menu_markup())
+    elif call.data.capitalize() in zodiac_signs:
+        fetch_horoscope(call.message, call.data.capitalize())
+    elif call.data.capitalize() in chinese_zodiac_animals:
+        fetch_chinese_horoscope(call.message, call.data.capitalize())
 
 
+if __name__ == "__main__":
+    bot_thread = threading.Thread(target=run_bot)
+    schedule_thread = threading.Thread(target=run_schedule)
 
-bot.infinity_polling()
+    bot_thread.start()
+    schedule_thread.start()
