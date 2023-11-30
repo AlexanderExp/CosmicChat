@@ -58,23 +58,3 @@ def random_motivation():
 
     return random_motivation
 
-
-# не рабочий код, пыталась открывать json и считывать с него
-def random_crow2():
-    with open('crow_type.json') as f:
-        crow_type = json.loads(f.read())
-        random_crow = random.choice(crow_type.keys())
-        crow = crow_type[random_crow]
-    return crow
-
-def random_motivation2():
-    with open('motivation.json') as motivation:
-        today = date.today()
-        sdate = datetime.datetime.strptime("2023-12-21", '%Y-%m-%d')
-        edate = datetime.datetime.strptime("2023-12-29", '%Y-%m-%d')
-        if sdate <= today <= edate:
-            random_motivation = random.choice(motivation['exam'])
-        else:
-            random_motivation = random.choice(motivation['not_exam'])
-
-    return random_motivation

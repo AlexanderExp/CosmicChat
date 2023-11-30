@@ -3,6 +3,7 @@ from telebot import types
 import datetime
 import re
 import db_functions
+import comp_func
 import hse_spec_func
 from thread_safe_dict import ThreadSafeDict
 import schedule
@@ -31,6 +32,8 @@ zodiac_signs = {
     "Водолей": "Aquarius",
     "Рыбы": "Pisces"
 }
+
+zodiac_compatibility = ["Овен2","Телец2","Близнецы2","Рак2","Лев2","Дева2","Весы2","Скорпион2","Стрелец2","Козерог2","Водолей2","Рыбы2"]
 
 chinese_zodiac_animals = {
     "Крыса": "https://vashzodiak.ru/kitaiskii-prognoz/krysa/",
@@ -77,8 +80,8 @@ def run_schedule():
 bot = telebot.TeleBot(TOKEN, parse_mode=None)
 
 def fetch_horoscope(message, sign):
-    horoscope_message = f'*Horoscope:* {safe_daily_horoscopes.get(zodiac_signs[sign])}\n*Sign:* {sign}'
-    bot.send_message(message.chat.id, "Here's your horoscope!")
+    horoscope_message = f'*Гороскоп:* {safe_daily_horoscopes.get(zodiac_signs[sign])}\n*Знак зодиака:* {sign}'
+    bot.send_message(message.chat.id, "Вот ваш гороскоп!")
     bot.send_message(message.chat.id, horoscope_message, parse_mode="Markdown")
 
 def fetch_chinese_horoscope(message, animal):
@@ -87,8 +90,8 @@ def fetch_chinese_horoscope(message, animal):
     soup = BeautifulSoup(html, 'html.parser')
     div = soup.find('div', class_='col-md-8')
     text_nodes = [element for element in div.contents if isinstance(element, NavigableString)]
-    bot.send_message(message.chat.id, "Here's your horoscope!")
-    horoscope_message = f'*Horoscope:* {text_nodes[1]}\n*Animal:* {animal}'
+    bot.send_message(message.chat.id, "Вот ваш гороскоп!")
+    horoscope_message = f'*Китайский гороскоп:* {text_nodes[1]}\n*Китайское животное:* {animal}'
     bot.send_message(message.chat.id, horoscope_message, parse_mode="Markdown")
 
 def create_main_menu_markup():
@@ -125,6 +128,24 @@ def create_zodiac_menu():
     capricorn = types.InlineKeyboardButton('Козерог', callback_data='козерог')
     aquarius = types.InlineKeyboardButton('Водолей', callback_data='водолей')
     pisces = types.InlineKeyboardButton('Рыбы', callback_data='рыбы')
+
+    keyboard = types.InlineKeyboardMarkup()
+    keyboard.add(aries, taurus, gemini, crayfish, leo, virgo, libra, scorpio, sagittarius, capricorn, aquarius, pisces)
+    return keyboard
+
+def create_zodiac_menu2():
+    aries = types.InlineKeyboardButton('Овен', callback_data='Овен2')
+    taurus = types.InlineKeyboardButton('Телец', callback_data='Телец2')
+    gemini = types.InlineKeyboardButton('Близнецы', callback_data='Близнецы2')
+    crayfish = types.InlineKeyboardButton('Рак', callback_data='Рак2')
+    leo = types.InlineKeyboardButton('Лев', callback_data='Лев2')
+    virgo = types.InlineKeyboardButton('Дева', callback_data='Дева2')
+    libra = types.InlineKeyboardButton('Весы', callback_data='Весы2')
+    scorpio = types.InlineKeyboardButton('Скорпион', callback_data='Скорпион2')
+    sagittarius = types.InlineKeyboardButton('Стрелец', callback_data='Стрелец2')
+    capricorn = types.InlineKeyboardButton('Козерог', callback_data='Козерог2')
+    aquarius = types.InlineKeyboardButton('Водолей', callback_data='Водолей2')
+    pisces = types.InlineKeyboardButton('Рыбы', callback_data='Рыбы2')
 
     keyboard = types.InlineKeyboardMarkup()
     keyboard.add(aries, taurus, gemini, crayfish, leo, virgo, libra, scorpio, sagittarius, capricorn, aquarius, pisces)
@@ -188,7 +209,7 @@ def check_message(message):
             bot.send_message(message.chat.id, "Выберите животное:", reply_markup=create_chineese_menu())
 
         elif(message.text == "Совместимость"):
-            bot.send_message(message.chat.id, "Пока не знаю")
+            bot.send_message(message.chat.id, "Выберите знак зодиака, про который Вы хотите узнать:", reply_markup=create_zodiac_menu2())
 
         elif(message.text == "Натальная карта"):
             bot.send_message(message.chat.id, "Пока не знаю")
@@ -227,6 +248,9 @@ def answer(call):
         fetch_horoscope(call.message, call.data.capitalize())
     elif call.data.capitalize() in chinese_zodiac_animals:
         fetch_chinese_horoscope(call.message, call.data.capitalize())
+    elif call.data in zodiac_compatibility:
+        comp = comp_func.find_comp(call.data)
+        bot.send_message(call.message.chat.id, comp, reply_markup=create_main_menu_markup())
 
 
 if __name__ == "__main__":
