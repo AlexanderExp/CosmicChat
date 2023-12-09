@@ -6,10 +6,9 @@ from kerykeion import AstrologicalSubject, KerykeionChartSVG, Report
 from telebot import types
 
 from db_functions import get_user_name, get_birth_date, get_birth_time, get_birth_place
-from main import bot
 
 
-def run(user_id, chat_id):
+def run(user_id, chat_id, bot):
     birth_date_str = get_birth_date(user_id)
     user_name = get_user_name(user_id)
     birth_time_str = get_birth_time(user_id)
@@ -31,7 +30,7 @@ def run(user_id, chat_id):
         for item in missing_info:
             markup.add(item)
         markup.add("Выйти")
-        bot.send_message(chat_id, "Для корректной работы недостает нижеследующей информации:", reply_markup=markup)
+        bot.send_message(chat_id, "Для корректной работы недостает следующей информации:", reply_markup=markup)
         return
 
     # Parsing birthdate and time

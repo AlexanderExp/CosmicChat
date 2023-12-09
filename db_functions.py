@@ -65,7 +65,7 @@ def change_subscription(user_id):
     cursor = conn.cursor()
     [is_subs, ] = cursor.execute('SELECT daily_mess FROM user WHERE id = ?',
                                  (user_id,))
-    if (is_subs == (1,)):
+    if is_subs == (1,):
         cursor.execute('UPDATE user SET daily_mess = ?, state = ? WHERE id = ?',
                        (0, 'true', user_id))
     else:
