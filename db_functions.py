@@ -129,9 +129,7 @@ def update_user_info(user_id, user_name=None, birth_date=None, birth_time=None, 
     """
     conn = sqlite3.connect('users.sqlite')
     cursor = conn.cursor()
-    flag = 0
     if user_name:
-        flag = 1
         cursor.execute("UPDATE user SET user_name=? WHERE id=?", (user_name, user_id))
     if birth_date:
         cursor.execute("UPDATE user SET birth_date=? WHERE id=?", (birth_date, user_id))
@@ -142,4 +140,3 @@ def update_user_info(user_id, user_name=None, birth_date=None, birth_time=None, 
 
     conn.commit()
     conn.close()
-    return flag

@@ -3,3 +3,4 @@ shedule
 kerykeion~=4.2.4
 requests~=2.31.0
 beautifulsoup4~=4.12.2
+CairoSVG~=2.7.1

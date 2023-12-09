@@ -9,11 +9,6 @@ from db_functions import get_user_name, get_birth_date, get_birth_time, get_birt
 from main import bot
 
 
-def request_missing_info(chat_id, missing_info):
-    """Send a message to the user requesting the missing information."""
-    bot.send_message(chat_id, f"Please enter your {missing_info}.")
-
-
 def run(user_id, chat_id):
     birth_date_str = get_birth_date(user_id)
     user_name = get_user_name(user_id)
@@ -23,21 +18,21 @@ def run(user_id, chat_id):
     missing_info = []
 
     if not user_name:
-        missing_info.append("Enter name")
+        missing_info.append("Ввести имя")
     if not birth_date_str:
-        missing_info.append("Enter birth date")
+        missing_info.append("Ввести дату рождения")
     if not birth_time_str:
-        missing_info.append("Enter birth time")
+        missing_info.append("Ввести время рождения")
     if not birth_place_str:
-        missing_info.append("Enter birth place")
+        missing_info.append("Ввести место рождения")
 
     if missing_info:
         markup = types.ReplyKeyboardMarkup(one_time_keyboard=True)
         for item in missing_info:
             markup.add(item)
-        markup.add("Exit")
-        bot.send_message(chat_id, "Please provide the missing information:", reply_markup=markup)
-        return  # Exit the function and wait for user's response
+        markup.add("Выйти")
+        bot.send_message(chat_id, "Для корректной работы недостает нижеследующей информации:", reply_markup=markup)
+        return
 
     # Parsing birthdate and time
     birth_date_str = birth_date_str.split(' ')[0]

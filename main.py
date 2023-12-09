@@ -194,6 +194,45 @@ def send_welcome(message):
         bot.send_message(message.chat.id, "Выберите действие", reply_markup=create_main_menu_markup())
 
 
+def validate_and_parse_date(date_text):
+    """
+    Проверяет, соответствует ли текст даты формату ДД.ММ.ГГГГ, и преобразует его в объект datetime.
+    Возвращает кортеж (bool, datetime), где первый элемент - успешность преобразования, второй - объект datetime или None.
+    """
+    if re.match(r'\d{2}\.\d{2}\.\d{4}', date_text):
+        try:
+            return True, datetime.datetime.strptime(date_text, '%d.%m.%Y')
+        except ValueError:
+            return False, None
+    else:
+        return False, None
+
+
+def validate_and_parse_time(time_text):
+    """
+    Проверяет, соответствует ли текст времени формату ЧЧ:ММ в 24-часовом формате, и преобразует его в объект datetime.time.
+    Возвращает кортеж (bool, datetime.time), где первый элемент - успешность преобразования, второй - объект datetime.time или None.
+    """
+    if re.match(r'^([01][0-9]|2[0-3]):[0-5][0-9]$', time_text):
+        try:
+            return True, datetime.datetime.strptime(time_text, '%H:%M').time()
+        except ValueError:
+            return False, None
+    else:
+        return False, None
+
+
+def validate_birth_place(place_text):
+    """
+    Проверяет, соответствует ли текст места рождения формату 'Город, Страна'.
+    Возвращает bool - успешность проверки.
+    """
+    if re.match(r'^[a-zA-Zа-яА-ЯёЁ\s-]+, [a-zA-Zа-яА-ЯёЁ\s-]+$', place_text):
+        return True
+    else:
+        return False
+
+
 @bot.message_handler(func=lambda message: True)
 def check_message(message):
     user_id = message.from_user.id
@@ -206,44 +245,41 @@ def check_message(message):
                      "Добро пожаловать в бота-гороскоп! Пожалуйста, введите вашу дату рождения в формате ДД.ММ.ГГГГ.")
     elif state[0] == 'false':
         date_text = message.text
-        if re.match(r'\d{2}\.\d{2}\.\d{4}', date_text):
-            try:
-                birth_date = datetime.datetime.strptime(date_text, '%d.%m.%Y')
-                db_functions.set_birthday(birth_date, message.from_user.id)
-                bot.reply_to(message, "Вы успешно зарегистрированы!")
-                bot.send_message(message.chat.id, "Хотите получать ежедневный астрологический прогноз?",
-                                 reply_markup=create_menu_yes_no())
-            except:
-                bot.reply_to(message, "Неверный формат даты. Пожалуйста, введите дату в формате ДД.ММ.ГГГГ.")
+        is_valid, birth_date = validate_and_parse_date(date_text)
+        if is_valid:
+            db_functions.set_birthday(birth_date, message.from_user.id)
+            bot.reply_to(message, "Вы успешно зарегистрированы!")
+            bot.send_message(message.chat.id, "Хотите получать ежедневный астрологический прогноз?",
+                             reply_markup=create_menu_yes_no())
         else:
             bot.reply_to(message, "Неверный формат даты. Пожалуйста, введите дату в формате ДД.ММ.ГГГГ.")
     else:
-        if (message.text == "Мой гороскоп на сегодня"):
+        if message.text == "Мой гороскоп на сегодня":
             sign = db_functions.get_sign(message.from_user.id)
             fetch_horoscope(message, sign)
 
-        elif (message.text == "Гороскоп на сегодня (выбрать зодиак)"):
+        elif message.text == "Гороскоп на сегодня (выбрать зодиак)":
             bot.send_message(message.chat.id, "Выберите знак зодиака:", reply_markup=create_zodiac_menu())
 
-        elif (message.text == "Китайский гороскоп"):
+        elif message.text == "Китайский гороскоп":
             bot.send_message(message.chat.id, "Выберите животное:", reply_markup=create_chineese_menu())
 
-        elif (message.text == "Совместимость"):
+        elif message.text == "Совместимость":
             bot.send_message(message.chat.id, "Выберите знак зодиака, про который Вы хотите узнать:",
                              reply_markup=create_zodiac_menu2())
 
-        elif (message.text == "Натальная карта"):
+        elif message.text == "Натальная карта":
             natal_map.run(message.from_user.id, message.chat.id)
 
-        elif (message.text == "HSE Special: Какая ворона ты сегодня?"):
+        elif message.text == "HSE Special: Какая ворона ты сегодня?":
             bot.send_message(message.chat.id, hse_spec_func.random_crow())
 
-        elif (message.text == "Мотивашка дня"):
+        elif message.text == "Мотивашка дня":
             bot.send_message(message.chat.id, hse_spec_func.random_motivation())
 
-        elif (message.text == "Отписаться / подписаться на ежедневный гороскоп"):
+        elif message.text == "Отписаться / подписаться на ежедневный гороскоп":
             b = db_functions.change_subscription(message.from_user.id)
-            if (b == (1,)):
+            if b == (1,):
                 bot.send_message(message.chat.id, "Done! Вы отписались от ежедневной рассылки")
             else:
                 bot.send_message(message.chat.id, "Готово! Вы подписались на ежедневную рассылку гороскопа")
@@ -251,34 +287,59 @@ def check_message(message):
         elif re.match(r'\d{2}\.\d{2}\.\d{4}', message.text):
             bot.send_message(message.chat.id, "Похоже вы пытаетесь ввести дату, но я уже знаю ваш День Рождения ^ - ^")
 
-        elif message.text == "Enter name":
-            bot.reply_to(message, "Пожалуйста, введите ваше имя.")
+        elif message.text == "Ввести имя":
+            bot.reply_to(message, "Пожалуйста, введите ваше имя")
             user_data[user_id]['awaiting_info'] = 'name'
-        elif message.text == "Enter birth date":
-            bot.reply_to(message, "Пожалуйста, введите вашу дату рождения в формате ДД.ММ.ГГГГ.")
+        elif message.text == "Ввести дату рождения":
+            bot.reply_to(message, "Пожалуйста, введите вашу дату рождения в формате 'ДД.ММ.ГГГГ'")
             user_data[user_id]['awaiting_info'] = 'birth_date'
-        elif message.text == "Enter birth time":
-            bot.reply_to(message, "Пожалуйста, введите ваше время рождения в формате ЧЧ:ММ.")
+        elif message.text == "Ввести время рождения":
+            bot.reply_to(message, "Пожалуйста, введите ваше время рождения в формате 'ЧЧ:ММ'")
             user_data[user_id]['awaiting_info'] = 'birth_time'
-        elif message.text == "Enter birth place":
-            bot.reply_to(message, "Пожалуйста, введите место вашего рождения в формате Город, Страна.")
+        elif message.text == "Ввести место рождения":
+            bot.reply_to(message, "Пожалуйста, введите место вашего рождения в формате 'Город, Страна'")
             user_data[user_id]['awaiting_info'] = 'birth_place'
-        elif message.text == "Exit":
+        elif message.text == "Выйти":
             bot.reply_to(message, "Ходят слухи, что в начале 90-х на эту кнопку нажали 15 союзных республик")
             bot.send_message(message.chat.id, "Выберите действие", reply_markup=create_main_menu_markup())
         elif user_id in user_data and 'awaiting_info' in user_data[user_id]:
             awaiting_info = user_data[user_id]['awaiting_info']
             if awaiting_info == 'name':
-                x = db_functions.update_user_info(user_id, user_name=message.text)
-                bot.reply_to(message, x)
+                if message.text == "":
+                    bot.reply_to(message, "Вы ничего не ввели, попробуйте еще раз")
+                else:
+                    db_functions.update_user_info(user_id, user_name=message.text)
+                    bot.reply_to(message, "Ваше имя сохранено")
+                    del user_data[user_id]['awaiting_info']
+                    natal_map.run(user_id, chat_id=message.chat.id)
             elif awaiting_info == 'birth_date':
-                db_functions.update_user_info(user_id, birth_date=message.text)
+                is_valid, birth_date = validate_and_parse_date(message.text)
+                if is_valid:
+                    db_functions.update_user_info(user_id, birth_date=message.text)
+                    bot.reply_to(message, "Дата рождения сохранена")
+                    del user_data[user_id]['awaiting_info']
+                    natal_map.run(user_id, chat_id=message.chat.id)
+                else:
+                    bot.reply_to(message, "Вы ничего не ввели, попробуйте ввести дату рождения (ДД.ММ.ГГГГ) еще раз")
             elif awaiting_info == 'birth_time':
-                db_functions.update_user_info(user_id, birth_time=message.text)
+                is_valid, time_value = validate_and_parse_time(message.text)
+                if is_valid:
+                    db_functions.update_user_info(user_id, birth_time=time_value.strftime('%H:%M'))
+                    bot.reply_to(message, "Время рождения сохранено")
+                    del user_data[user_id]['awaiting_info']
+                    natal_map.run(user_id, chat_id=message.chat.id)
+                else:
+                    bot.reply_to(message, "Неверный формат времени. Пожалуйста, введите время в формате ЧЧ:ММ.")
             elif awaiting_info == 'birth_place':
-                db_functions.update_user_info(user_id, birth_place=message.text)
-            del user_data[user_id]['awaiting_info']
-            bot.send_message(message.chat.id, "Выберите действие", reply_markup=create_main_menu_markup())
+                is_valid = validate_birth_place(message.text)
+                if is_valid:
+                    db_functions.update_user_info(user_id, birth_place=message.text)
+                    bot.reply_to(message, "Место рождения сохранено")
+                    del user_data[user_id]['awaiting_info']
+                    natal_map.run(user_id, chat_id=message.chat.id)
+                else:
+                    bot.reply_to(message,
+                                 "Неверный формат места рождения. Пожалуйста, введите в формате 'Город, Страна'")
         else:
             bot.send_message(message.chat.id, 'Ой! Я вас не понял :(', reply_markup=create_main_menu_markup())
 
