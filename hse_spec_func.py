@@ -1,5 +1,7 @@
 import datetime
+from datetime import timedelta
 import random
+import db_functions
 
 crow_type = {
     "usual": "usual ворона:\nПохоже, вы обычная ворона среди деловых будней",
@@ -42,9 +44,18 @@ motivation = {
 }
 
 
-def random_crow():
+def random_crow(user_id):
+    today = datetime.datetime.now()
+
+    last_time = db_functions.get_crow_time(user_id)
+    if last_time:
+        if datetime.datetime.strptime(last_time, '%Y-%m-%d %H:%M:%S') - today < datetime.timedelta(hours = 24):
+            return db_functions.get_crow(user_id)
+
     random_crow = random.choice(list(crow_type.keys()))
     crow = crow_type[random_crow]
+    db_functions.set_crow(user_id, crow, today.strftime('%Y-%m-%d %H:%M:%S'))
+    
     return crow
 
 

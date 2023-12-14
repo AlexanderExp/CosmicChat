@@ -16,6 +16,8 @@ def create_database() -> None:
         chineese_zodiac TEXT,
         birth_place TEXT,
         daily_mess INTEGER,
+        crow_type TEXT,
+        crow_time TEXT,
         state BOOL
     )
     ''')
@@ -119,6 +121,31 @@ def get_birth_place(user_id):
     cursor.execute("SELECT birth_place FROM user WHERE id=?", (user_id,))
     result = cursor.fetchone()
     return result[0] if result else None
+
+def get_crow(user_id):
+    """ Query current crow by user_id """
+    conn = sqlite3.connect('users.sqlite')
+    cursor = conn.cursor()
+    cursor.execute("SELECT crow_type FROM user WHERE id=?", (user_id,))
+    result = cursor.fetchone()
+    return result[0] if result else None
+
+def get_crow_time(user_id):
+    """ Query current crow by user_id """
+    conn = sqlite3.connect('users.sqlite')
+    cursor = conn.cursor()
+    cursor.execute("SELECT crow_time FROM user WHERE id=?", (user_id,))
+    result = cursor.fetchone()
+    return result[0] if result else None
+
+def set_crow(user_id, crow, time):
+    """ Set current crow by user_id """
+    conn = sqlite3.connect('users.sqlite')
+    cursor = conn.cursor()
+    cursor.execute("UPDATE user SET crow_type = ?, crow_time = ? WHERE id = ?",
+                       (crow, time, user_id))
+    conn.commit()
+    conn.close()
 
 
 def update_user_info(user_id, user_name=None, birth_date=None, birth_time=None, birth_place=None):

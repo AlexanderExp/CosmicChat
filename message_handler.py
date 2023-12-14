@@ -44,7 +44,7 @@ def process_user_message(message, user_id, bot):
 
 def handle_new_user(message, user_id, bot):
     db_functions.register_user(user_id, None)
-    welcome_message = "Добро пожаловать в бота-гороскоп! Пожалуйста, введите вашу дату рождения в формате ДД.ММ.ГГГГ."
+    welcome_message = "🔮 Добро пожаловать в бота-гороскоп! 🔮\nПожалуйста, введите вашу дату рождения в формате ДД.ММ.ГГГГ."
     bot.reply_to(message, welcome_message)
 
 
@@ -58,7 +58,7 @@ def handle_natal_map(message, bot):
 
 
 def handle_HSE_crow(message, bot):
-    bot.send_message(message.chat.id, hse_spec_func.random_crow())
+    bot.send_message(message.chat.id, hse_spec_func.random_crow(message.from_user.id))
 
 
 def handle_daily_motivation(message, bot):
@@ -92,7 +92,7 @@ def handle_natal_map_set_awaiting_for_addition_flag(message, user_id, bot):
         bot.reply_to(message, "Пожалуйста, введите место вашего рождения в формате 'Город, Страна'")
         user_data[user_id]['awaiting_info'] = 'birth_place'
     elif message.text == "Выйти":
-        bot.reply_to(message, "Ходят слухи, что в начале 90-х на эту кнопку нажали 15 союзных республик")
+        bot.reply_to(message, "Ходят слухи, что в начале 90-х на эту кнопку нажали 15 союзных республик 😏")
         bot.send_message(message.chat.id, "Выберите действие", reply_markup=create_main_menu_markup())
 
 
@@ -167,19 +167,19 @@ def handle_chinese_horoscope(message, bot):
 
 def handle_registered_user_actions(message, bot):
     user_id = message.from_user.id
-    if message.text == "Мой гороскоп на сегодня":
+    if message.text == "🔮 Мой гороскоп на сегодня 🔮":
         handle_daily_horoscope(message, user_id)
-    elif message.text == "Гороскоп на сегодня (выбрать зодиак)":
+    elif message.text == "🪄 Гороскоп на сегодня (выбрать зодиак) 🪄":
         handle_zodiac_selection(message, bot)
-    elif message.text == "Китайский гороскоп":
+    elif message.text == "☘️ Китайский гороскоп ☘️":
         handle_chinese_horoscope(message, bot)
-    elif message.text == "Совместимость":
+    elif message.text == "👽 Совместимость 👽":
         handle_compatibility(message, bot)
-    elif message.text == "Натальная карта":
+    elif message.text == "🎴 Натальная карта 🎴":
         handle_natal_map(message, bot)
-    elif message.text == "HSE Special: Какая ворона ты сегодня?":
+    elif message.text == "🐦‍ HSE Special: Какая ворона ты сегодня? 🐦‍":
         handle_HSE_crow(message, bot)
-    elif message.text == "Мотивашка дня":
+    elif message.text == "🏆 Мотивашка дня 🏆":
         handle_daily_motivation(message, bot)
     elif message.text == "Отписаться / подписаться на ежедневный гороскоп":
         handle_daily_horoscope_subscription(message, bot)
