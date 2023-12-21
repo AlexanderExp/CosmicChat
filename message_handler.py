@@ -49,19 +49,24 @@ def handle_new_user(message, user_id, bot):
 
 
 def handle_compatibility(message, bot):
+    bot.send_photo(message.chat.id, photo=open('photos/compat.jpg', 'rb'))
     bot.send_message(message.chat.id, "Выберите знак зодиака, про который Вы хотите узнать:",
                      reply_markup=create_zodiac_menu2())
 
 
 def handle_natal_map(message, bot):
+    bot.send_photo(message.chat.id, photo=open('photos/natal.jpg', 'rb'))
     natal_map.run(message.from_user.id, message.chat.id, bot)
 
 
 def handle_HSE_crow(message, bot):
-    bot.send_message(message.chat.id, hse_spec_func.random_crow(message.from_user.id))
+    crow = hse_spec_func.random_crow(message.from_user.id)
+    bot.send_photo(message.chat.id, photo=open(f'crow_photos/{crow[0]}.jpg', 'rb'))
+    bot.send_message(message.chat.id, crow[1])
 
 
 def handle_daily_motivation(message, bot):
+    bot.send_photo(message.chat.id, photo=open('photos/motivation.jpg', 'rb'))
     bot.send_message(message.chat.id, hse_spec_func.random_motivation())
 
 
@@ -158,10 +163,12 @@ def handle_daily_horoscope(message, user_id):
 
 
 def handle_zodiac_selection(message, bot):
+    bot.send_photo(message.chat.id, photo=open('photos/zodiac_selection.jpg', 'rb'))
     bot.send_message(message.chat.id, "Выберите знак зодиака:", reply_markup=create_zodiac_menu())
 
 
 def handle_chinese_horoscope(message, bot):
+    bot.send_photo(message.chat.id, photo=open('photos/chinese_pic.jpg', 'rb'))
     bot.send_message(message.chat.id, "Выберите животное:", reply_markup=create_chinese_menu())
 
 

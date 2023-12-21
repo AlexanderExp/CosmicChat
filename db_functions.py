@@ -17,6 +17,7 @@ def create_database() -> None:
         birth_place TEXT,
         daily_mess INTEGER,
         crow_type TEXT,
+        crow_text TEXT,
         crow_time TEXT,
         state BOOL
     )
@@ -126,9 +127,9 @@ def get_crow(user_id):
     """ Query current crow by user_id """
     conn = sqlite3.connect('users.sqlite')
     cursor = conn.cursor()
-    cursor.execute("SELECT crow_type FROM user WHERE id=?", (user_id,))
+    cursor.execute("SELECT crow_type, crow_text FROM user WHERE id=?", (user_id,))
     result = cursor.fetchone()
-    return result[0] if result else None
+    return result if result else None
 
 def get_crow_time(user_id):
     """ Query current crow by user_id """
@@ -138,12 +139,12 @@ def get_crow_time(user_id):
     result = cursor.fetchone()
     return result[0] if result else None
 
-def set_crow(user_id, crow, time):
+def set_crow(user_id, crow, crow_text, time):
     """ Set current crow by user_id """
     conn = sqlite3.connect('users.sqlite')
     cursor = conn.cursor()
-    cursor.execute("UPDATE user SET crow_type = ?, crow_time = ? WHERE id = ?",
-                       (crow, time, user_id))
+    cursor.execute("UPDATE user SET crow_type = ?, crow_text = ?, crow_time = ? WHERE id = ?",
+                       (crow, crow_text, time, user_id))
     conn.commit()
     conn.close()
 

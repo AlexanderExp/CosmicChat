@@ -52,6 +52,7 @@ bot = telebot.TeleBot(TOKEN, parse_mode=None)
 
 
 def fetch_horoscope(message, sign):
+    bot.send_photo(message.chat.id, photo=open('photos/zodiac_horoscope.jpg', 'rb'))
     horoscope_message = f'*Гороскоп:* {safe_daily_horoscopes.get(zodiac_signs[sign])}\n*Знак зодиака:* {sign}'
     bot.send_message(message.chat.id, "Вот ваш гороскоп!")
     bot.send_message(message.chat.id, horoscope_message, parse_mode="Markdown")
@@ -73,6 +74,7 @@ def send_welcome(message):
     state = db_functions.check_user(message.from_user.id)
     if state is None or state[0] == 'false':
         db_functions.register_user(message.from_user.id, state)
+        bot.send_photo(message.chat.id, photo=open('photos/welcome.jpg', 'rb'))
         bot.reply_to(message,
                      "🔮 Добро пожаловать в бота-гороскоп! 🔮\nПожалуйста, введите вашу дату рождения в формате ДД.ММ.ГГГГ.")
     else:
