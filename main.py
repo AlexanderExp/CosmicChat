@@ -76,7 +76,8 @@ def send_welcome(message):
         db_functions.register_user(message.from_user.id, state)
         bot.send_photo(message.chat.id, photo=open('photos/welcome.jpg', 'rb'))
         bot.reply_to(message,
-                     "🔮 Добро пожаловать в бота-гороскоп! 🔮\nПожалуйста, введите вашу дату рождения в формате ДД.ММ.ГГГГ.")
+                     "🔮 Добро пожаловать в бота-гороскоп! 🔮\nПожалуйста, введите вашу дату рождения в формате "
+                     "ДД.ММ.ГГГГ.")
     else:
         bot.send_message(message.chat.id, "Выберите действие", reply_markup=create_main_menu_markup())
 

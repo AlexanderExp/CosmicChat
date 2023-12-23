@@ -60,7 +60,7 @@ def handle_natal_map(message, bot):
 
 
 def handle_HSE_crow(message, bot):
-    crow = hse_spec_func.random_crow(message.from_user.id)
+    crow = hse_spec_func.generate_random_crow(message.from_user.id)
     bot.send_photo(message.chat.id, photo=open(f'crow_photos/{crow[0]}.jpg', 'rb'))
     bot.send_message(message.chat.id, crow[1])
 
@@ -97,7 +97,7 @@ def handle_natal_map_set_awaiting_for_addition_flag(message, user_id, bot):
         bot.reply_to(message, "Пожалуйста, введите место вашего рождения в формате 'Город, Страна'")
         user_data[user_id]['awaiting_info'] = 'birth_place'
     elif message.text == "Выйти":
-        bot.reply_to(message, "Ходят слухи, что в начале 90-х на эту кнопку нажали 15 союзных республик 😏")
+        bot.reply_to(message, "Ходят слухи, что в начале 90-х на эту кнопку нажали 15 союзных республик")
         bot.send_message(message.chat.id, "Выберите действие", reply_markup=create_main_menu_markup())
 
 
