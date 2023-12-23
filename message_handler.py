@@ -192,6 +192,10 @@ def handle_registered_user_actions(message, bot):
         handle_daily_horoscope_subscription(message, bot)
     elif message.text in ["Ввести имя", "Ввести дату рождения", "Ввести время рождения", "Ввести место рождения"]:
         handle_natal_map_set_awaiting_for_addition_flag(message, user_id, bot)
+    elif message.text == "Выйти":
+        bot.send_message(message.chat.id, "Ходят слухи, что в начале 90-х на эту кнопку нажали 15 союзных республик",
+                         reply_markup=create_main_menu_markup())
+
     elif user_id in user_data and 'awaiting_info' in user_data[user_id]:
         awaiting_info = user_data[user_id]['awaiting_info']
         handle_natal_map_info_addition(message, awaiting_info, user_id, bot)
