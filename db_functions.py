@@ -1,5 +1,5 @@
 import sqlite3
-
+import datetime
 import zodiac_sign
 
 
@@ -9,6 +9,7 @@ def create_database() -> None:
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS user (
         id INTEGER PRIMARY KEY,
+        chat_id TEXT,
         birth_date TIMESTAMP,
         birth_time TEXT,
         user_name TEXT,
@@ -19,6 +20,7 @@ def create_database() -> None:
         crow_type TEXT,
         crow_text TEXT,
         crow_time TEXT,
+        last_run TEXT,
         state BOOL
     )
     ''')
@@ -36,11 +38,11 @@ def check_user(user_id: int):
     return result
 
 
-def register_user(user_id: int, state) -> None:
+def register_user(user_id: int, state, chat_id) -> None:
     if state is None:
         conn = sqlite3.connect('users.sqlite')
         cursor = conn.cursor()
-        cursor.execute('INSERT INTO user (id, state) VALUES (?, ?)', (user_id, 'false'))
+        cursor.execute('INSERT INTO user (id, state, chat_id) VALUES (?, ?, ?)', (user_id, 'false', chat_id))
         conn.commit()
         conn.close()
 
@@ -78,6 +80,36 @@ def change_subscription(user_id):
     conn.close()
     return is_subs
 
+def check_subscription(user_id):
+    conn = sqlite3.connect('users.sqlite')
+    cursor = conn.cursor()
+    [is_subs, ] = cursor.execute('SELECT daily_mess FROM user WHERE id = ?',
+                                 (user_id,))
+    conn.commit()
+    conn.close()
+    return is_subs[0]
+
+def get_susubscription():
+    users = [] # chat_id, sign
+    conn = sqlite3.connect('users.sqlite')
+    cursor = conn.cursor()
+    cursor.execute("SELECT chat_id, zodiac_sign, id FROM user WHERE daily_mess = 1 and (last_run is null or last_run <> ?)", 
+                   (datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d'),))
+    rows = cursor.fetchall()
+
+    for row in rows:
+        users.append(row)
+    conn.close()
+    return users
+
+def set_last_run(user_id):
+    """ Set current crow by user_id """
+    conn = sqlite3.connect('users.sqlite')
+    cursor = conn.cursor()
+    cursor.execute("UPDATE user SET last_run = ? WHERE id = ?",
+                       (datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d'), user_id))
+    conn.commit()
+    conn.close()
 
 def get_sign(user_id):
     conn = sqlite3.connect('users.sqlite')
