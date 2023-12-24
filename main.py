@@ -1,5 +1,6 @@
 import threading
 import time
+import schedule
 import xml.etree.ElementTree as ElemTree
 
 import requests
@@ -15,6 +16,7 @@ from thread_safe_dict import ThreadSafeDict
 
 TOKEN = '5717083963:AAHflxPNEMzSklg_hc5Snbs24MQv4aaUyNU'
 url = "https://ignio.com/r/export/win/xml/daily/com.xml"
+bot = telebot.TeleBot(TOKEN, parse_mode=None)
 
 user_data = {}
 
@@ -39,18 +41,6 @@ def run_bot():
     bot.infinity_polling()
 
 
-# schedule.every().day.at("01:00").do(update_daily_horoscope)
-
-def run_schedule():
-    while True:
-        # schedule.run_pending()
-        update_daily_horoscope()
-        time.sleep(100)
-
-
-bot = telebot.TeleBot(TOKEN, parse_mode=None)
-
-
 def fetch_horoscope(message, sign):
     bot.send_photo(message.chat.id, photo=open('photos/zodiac_horoscope.jpg', 'rb'))
     horoscope_message = f'*Гороскоп:* {safe_daily_horoscopes.get(zodiac_signs[sign])}\n*Знак зодиака:* {sign}'
@@ -73,7 +63,7 @@ def fetch_chinese_horoscope(message, animal):
 def send_welcome(message):
     state = db_functions.check_user(message.from_user.id)
     if state is None or state[0] == 'false':
-        db_functions.register_user(message.from_user.id, state)
+        db_functions.register_user(message.from_user.id, state, message.chat.id)
         bot.send_photo(message.chat.id, photo=open('photos/welcome.jpg', 'rb'))
         bot.reply_to(message,
                      "🔮 Добро пожаловать в бота-гороскоп! 🔮\nПожалуйста, введите вашу дату рождения в формате ДД.ММ.ГГГГ.")
@@ -86,7 +76,6 @@ def check_message(message):
     message_handler.handle_message(message, bot)
 
 
-# Функция callback_query_handler вносится один раз для обработки всех событий
 @bot.callback_query_handler(func=lambda call: True)
 def answer(call):
     if call.data == 'да':
@@ -104,9 +93,31 @@ def answer(call):
         bot.send_message(call.message.chat.id, comp, reply_markup=create_main_menu_markup())
 
 
+def job1():
+    update_daily_horoscope()
+    users = db_functions.get_susubscription()
+    for user in users:
+        bot.send_photo(user[0], photo=open('photos/zodiac_horoscope.jpg', 'rb'))
+        horoscope_message = f'*Гороскоп:* {safe_daily_horoscopes.get(zodiac_signs[user[1]])}\n*Знак зодиака:* {user[1]}'
+        bot.send_message(user[0], "Вот ваш ежедневный гороскоп!")
+        bot.send_message(user[0], horoscope_message, parse_mode="Markdown")
+        db_functions.set_last_run(user[2])
+
+        
+
+schedule.every().day.at("08:51", "Europe/Moscow").do(job1)
+
+def run_schedule():
+    while True:
+        schedule.run_pending()
+        time.sleep(10)
+
 if __name__ == "__main__":
     bot_thread = threading.Thread(target=run_bot)
     schedule_thread = threading.Thread(target=run_schedule)
 
     bot_thread.start()
     schedule_thread.start()
+
+    bot_thread.join()
+    schedule_thread.join()
