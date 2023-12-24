@@ -61,7 +61,7 @@ def handle_natal_map(message, bot):
 
 def handle_HSE_crow(message, bot):
     crow = hse_spec_func.generate_random_crow(message.from_user.id)
-    bot.send_photo(message.chat.id, photo=open(f'crow_photos/{crow[0]}.png', 'rb'))
+    bot.send_photo(message.chat.id, photo=open(f'crow_photos/{crow[0]}.jpg', 'rb'))
     bot.send_message(message.chat.id, crow[1])
 
 
