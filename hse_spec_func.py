@@ -44,7 +44,7 @@ motivation = {
 }
 
 
-def random_crow(user_id):
+def generate_random_crow(user_id):
     today = datetime.datetime.now()
 
     last_time = db_functions.get_crow_time(user_id)
