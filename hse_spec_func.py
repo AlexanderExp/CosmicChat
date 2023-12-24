@@ -1,6 +1,6 @@
 import datetime
-from datetime import timedelta
 import random
+
 import db_functions
 
 crow_type = {
@@ -49,13 +49,13 @@ def generate_random_crow(user_id):
 
     last_time = db_functions.get_crow_time(user_id)
     if last_time:
-        if datetime.datetime.strptime(last_time, '%Y-%m-%d %H:%M:%S') - today < datetime.timedelta(hours = 24):
+        if datetime.datetime.strptime(last_time, '%Y-%m-%d %H:%M:%S') - today < datetime.timedelta(hours=24):
             return db_functions.get_crow(user_id)
 
     random_crow = random.choice(list(crow_type.keys()))
     crow_text = crow_type[random_crow]
     db_functions.set_crow(user_id, random_crow, crow_text, today.strftime('%Y-%m-%d %H:%M:%S'))
-    
+
     return [random_crow, crow_text]
 
 

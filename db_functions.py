@@ -123,6 +123,7 @@ def get_birth_place(user_id):
     result = cursor.fetchone()
     return result[0] if result else None
 
+
 def get_crow(user_id):
     """ Query current crow by user_id """
     conn = sqlite3.connect('users.sqlite')
@@ -130,6 +131,7 @@ def get_crow(user_id):
     cursor.execute("SELECT crow_type, crow_text FROM user WHERE id=?", (user_id,))
     result = cursor.fetchone()
     return result if result else None
+
 
 def get_crow_time(user_id):
     """ Query current crow by user_id """
@@ -139,12 +141,13 @@ def get_crow_time(user_id):
     result = cursor.fetchone()
     return result[0] if result else None
 
+
 def set_crow(user_id, crow, crow_text, time):
     """ Set current crow by user_id """
     conn = sqlite3.connect('users.sqlite')
     cursor = conn.cursor()
     cursor.execute("UPDATE user SET crow_type = ?, crow_text = ?, crow_time = ? WHERE id = ?",
-                       (crow, crow_text, time, user_id))
+                   (crow, crow_text, time, user_id))
     conn.commit()
     conn.close()
 
