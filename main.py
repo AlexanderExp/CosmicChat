@@ -25,16 +25,33 @@ safe_daily_horoscopes = ThreadSafeDict()
 db_functions.create_database()
 
 
-def update_daily_horoscope():
-    response = requests.get(url)
-    xml_content = response.content
+def update_daily_horoscope(max_attempts=5):
+    attempt = 0
+    while attempt < max_attempts:
+        try:
+            response = requests.get(url)
+            response.raise_for_status()  # Проверяет, что запрос был успешным
+            xml_content = response.content
 
-    root = ElemTree.fromstring(xml_content)
+            try:
+                root = ElemTree.fromstring(xml_content)
+                for sign in list(root):
+                    sign_name = sign.tag
+                    if sign_name != 'date':
+                        safe_daily_horoscopes.set(sign_name.capitalize(), sign.find('today').text)
+                # Успех
+                break
 
-    for sign in list(root):
-        sign_name = sign.tag
-        if sign_name != 'date':
-            safe_daily_horoscopes.set(sign_name.capitalize(), sign.find('today').text)
+            except ElemTree.ParseError:
+                print("Ошибка при разборе XML.")
+                break  # Выход из цикла, если XML невозможно разобрать
+
+        except requests.RequestException as e:
+            print(f"Ошибка при выполнении запроса: {e}")
+            attempt += 1  # Увеличиваем счетчик попыток
+
+    if attempt == max_attempts:
+        print("Превышено максимальное количество попыток запроса, всё плохо")
 
 
 def run_bot():
@@ -49,14 +66,26 @@ def fetch_horoscope(message, sign):
 
 
 def fetch_chinese_horoscope(message, animal):
-    response = requests.get(chinese_zodiac_animals[animal])
-    html = response.content
-    soup = BeautifulSoup(html, 'html.parser')
-    div = soup.find('div', class_='col-md-8')
-    text_nodes = [element for element in div.contents if isinstance(element, NavigableString)]
-    bot.send_message(message.chat.id, "Вот ваш гороскоп!")
-    horoscope_message = f'*Китайский гороскоп:* {text_nodes[1]}\n*Китайское животное:* {animal}'
-    bot.send_message(message.chat.id, horoscope_message, parse_mode="Markdown")
+    try:
+        response = requests.get(chinese_zodiac_animals[animal])
+        response.raise_for_status()  # Проверяет, что запрос был успешным
+        html = response.content
+        soup = BeautifulSoup(html, 'html.parser')
+        div = soup.find('div', class_='col-md-8')
+
+        if div is not None:
+            text_nodes = [element for element in div.contents if isinstance(element, NavigableString)]
+            if text_nodes:
+                horoscope_message = f'*Китайский гороскоп:* {text_nodes[1]}\n*Китайское животное:* {animal}'
+                bot.send_message(message.chat.id, "Вот ваш гороскоп!", parse_mode="Markdown")
+                bot.send_message(message.chat.id, horoscope_message, parse_mode="Markdown")
+            else:
+                bot.send_message(message.chat.id, "Информация по гороскопу не найдена.")
+        else:
+            bot.send_message(message.chat.id, "Не удалось получить данные гороскопа.")
+
+    except requests.RequestException as e:
+        bot.send_message(message.chat.id, f"Произошла ошибка при запросе: {e}")
 
 
 @bot.message_handler(commands=['start', 'help'])
@@ -116,6 +145,8 @@ def run_schedule():
 if __name__ == "__main__":
     bot_thread = threading.Thread(target=run_bot)
     schedule_thread = threading.Thread(target=run_schedule)
+
+    update_daily_horoscope()
 
     bot_thread.start()
     schedule_thread.start()

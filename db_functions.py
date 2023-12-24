@@ -20,6 +20,8 @@ def create_database() -> None:
         crow_type TEXT,
         crow_text TEXT,
         crow_time TEXT,
+        motivation_text TEXT,
+        motivation_time TIME,
         last_run TEXT,
         state BOOL
     )
@@ -180,6 +182,31 @@ def set_crow(user_id, crow, crow_text, time):
     cursor = conn.cursor()
     cursor.execute("UPDATE user SET crow_type = ?, crow_text = ?, crow_time = ? WHERE id = ?",
                    (crow, crow_text, time, user_id))
+    conn.commit()
+    conn.close()
+
+def get_motivation(user_id):
+    """ Query current motivation by user_id """
+    conn = sqlite3.connect('users.sqlite')
+    cursor = conn.cursor()
+    cursor.execute("SELECT motivation_text FROM user WHERE id=?", (user_id,))
+    result = cursor.fetchone()
+    return result if result else None
+
+def get_motivation_time(user_id):
+    """ Query current motivation by user_id """
+    conn = sqlite3.connect('users.sqlite')
+    cursor = conn.cursor()
+    cursor.execute("SELECT motivation_time FROM user WHERE id=?", (user_id,))
+    result = cursor.fetchone()
+    return result[0] if result else None
+
+def set_motivation(user_id, motivation_text, time):
+    """ Set current motivation by user_id """
+    conn = sqlite3.connect('users.sqlite')
+    cursor = conn.cursor()
+    cursor.execute("UPDATE user SET motivation_text = ?, motivation_time = ? WHERE id = ?",
+                       (motivation_text, time, user_id))
     conn.commit()
     conn.close()
 

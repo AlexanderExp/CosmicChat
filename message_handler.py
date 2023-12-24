@@ -67,7 +67,7 @@ def handle_HSE_crow(message, bot):
 
 def handle_daily_motivation(message, bot):
     bot.send_photo(message.chat.id, photo=open('photos/motivation.jpg', 'rb'))
-    bot.send_message(message.chat.id, hse_spec_func.random_motivation())
+    bot.send_message(message.chat.id, hse_spec_func.generate_random_motivation(message.from_user.id))
 
 
 def handle_daily_horoscope_subscription(message, bot):

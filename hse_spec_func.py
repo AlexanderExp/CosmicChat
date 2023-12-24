@@ -59,13 +59,17 @@ def generate_random_crow(user_id):
     return [random_crow, crow_text]
 
 
-def random_motivation():
+def generate_random_motivation(user_id):
     today = datetime.datetime.now()
+    last_time = db_functions.get_motivation_time(user_id)
+    if last_time:
+        if datetime.datetime.strptime(last_time, '%Y-%m-%d %H:%M:%S') - today < datetime.timedelta(hours = 24):
+            return db_functions.get_motivation(user_id)
     sdate = datetime.datetime.strptime("2023-12-21", '%Y-%m-%d')
     edate = datetime.datetime.strptime("2023-12-29", '%Y-%m-%d')
     if sdate <= today <= edate:
         random_motivation = random.choice(motivation['exam'])
     else:
         random_motivation = random.choice(motivation['not_exam'])
-
+    db_functions.set_motivation(user_id, random_motivation, today.strftime('%Y-%m-%d %H:%M:%S'))
     return random_motivation
