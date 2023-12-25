@@ -1,5 +1,5 @@
 telebot~=0.0.5
-shedule
+schedule==1.2.1
 kerykeion~=4.2.4
 requests~=2.31.0
 beautifulsoup4~=4.12.2
