@@ -6,30 +6,26 @@
 
 ## Особенности
 
-Ежедневные гороскопы
-Астрологические прогнозы
-Персонализированные астрологические расчеты
-Интерактивное взаимодействие с пользователем
+* Ежедневные гороскопы
+* Астрологические прогнозы
+* Персонализированные астрологические расчеты
+* Интерактивное взаимодействие с пользователем
 
 
 ## Технологии
 
 Python 3.x
-Библиотеки: python-telegram-bot, requests, BeautifulSoup (для парсинга астрологических данных)
+Библиотеки: telebot, requests, BeautifulSoup (для парсинга астрологических данных)
 Астрологические API для получения данных
 Установка и запуск
 
-bash
-Copy code
-git clone https://your-repository-link.git
-cd your-project-name
-pip install -r requirements.txt
-python bot.py
+bash <br/>
+Copy code <br/>
+git clone https://your-repository-link.git <br/>
+cd your-project-name <br/>
+pip install -r requirements.txt <br/>
+python main.py </br>
 
 ## Использование
 
 После запуска бота в Telegram, пользователи могут взаимодействовать с ботом, используя команды, такие как /daily, /weekly, для получения гороскопов.
-
-## Конфигурация
-
-Для настройки бота необходимо создать файл config.py, содержащий токен бота и другие конфигурационные данные.

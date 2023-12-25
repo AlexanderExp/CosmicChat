@@ -14,7 +14,7 @@ from menus import create_main_menu_markup
 from related_info import zodiac_signs, zodiac_compatibility, chinese_zodiac_animals
 from thread_safe_dict import ThreadSafeDict
 
-TOKEN = '5717083963:AAHflxPNEMzSklg_hc5Snbs24MQv4aaUyNU'
+TOKEN = '6749008647:AAGQ82j7XAGa2S_NTk0fIlSM2bXUoYjiUAc'
 url = "https://ignio.com/r/export/win/xml/daily/com.xml"
 bot = telebot.TeleBot(TOKEN, parse_mode=None)
 
@@ -135,7 +135,7 @@ def job1():
 
         
 
-schedule.every().day.at("08:51", "Europe/Moscow").do(job1)
+schedule.every().day.at("11:20", "Europe/Moscow").do(job1)
 
 def run_schedule():
     while True:
