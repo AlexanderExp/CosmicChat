@@ -22,12 +22,10 @@ Python 3.x
 
 ## Установка и запуск
 
-bash <br/>
-Copy code <br/>
-git clone https://your-repository-link.git <br/>
-cd your-project-name <br/>
-pip install -r requirements.txt <br/>
-python main.py </br>
+git clone [https://your-repository-link.git <br/>](https://github.com/AlexanderExp/CosmicChat.git)
+cd your-project-name
+pip install -r requirements.txt
+python main.py
 
 ## Использование
 
